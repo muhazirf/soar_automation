@@ -77,6 +77,40 @@ class DashboardController extends BaseController
     }
 
     /**
+     * Display settings page
+     */
+    public function settings(Request $request)
+    {
+        $user = $this->authenticatedUser();
+
+        $settings = [
+            'notifications' => [
+                'email_alerts' => true,
+                'push_alerts' => false,
+                'alert_severity' => 'high',
+            ],
+            'security' => [
+                '2fa_enabled' => $user->hasTwoFactorAuth(),
+                'session_timeout' => 60,
+                'ip_whitelist' => [],
+            ],
+            'display' => [
+                'theme' => 'dark',
+                'timezone' => $user->timezone ?? 'UTC',
+                'time_format' => '24h',
+                'date_format' => 'MDY',
+            ],
+            'api' => [
+                'virus_total_enabled' => true,
+                'abuse_ch_enabled' => true,
+                'threatFox_enabled' => false,
+            ],
+        ];
+
+        return view('settings', compact('settings'));
+    }
+
+    /**
      * Get recent alerts
      */
     protected function getRecentAlerts($user, int $limit): array
