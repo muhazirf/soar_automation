@@ -37,7 +37,12 @@
 /* Custom utilities */
 @layer utilities {
     .glass-card {
-        @apply bg-surface-container/60 backdrop-blur-glass border border-outline-variant/20 shadow-glass;
+        /* Glass card styling is defined in themes.css to use CSS custom properties */
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     .soc-grid {
