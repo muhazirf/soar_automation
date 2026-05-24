@@ -115,7 +115,7 @@ class VirusTotalController extends BaseController
                 'type' => $type,
                 'target' => $this->generateTarget($type),
                 'result' => $result,
-                'detection_ratio' => "{$malicious}/{$malicious + $harmless}",
+                'detection_ratio' => $malicious . '/' . ($malicious + $harmless),
                 'malicious' => $malicious,
                 'suspicious' => $suspicious,
                 'harmless' => $harmless,
