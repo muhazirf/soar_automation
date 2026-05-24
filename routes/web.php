@@ -6,6 +6,7 @@ use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PlaybookController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ThreatController;
+use App\Http\Controllers\VirusTotalController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard
@@ -47,6 +48,14 @@ Route::prefix('playbooks')->middleware(['auth', 'verified'])->group(function () 
 Route::prefix('threats')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/', [ThreatController::class, 'index'])->name('threats.index');
     Route::get('/{id}', [ThreatController::class, 'show'])->name('threats.show');
+});
+
+// VirusTotal
+Route::prefix('virustotal')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [VirusTotalController::class, 'index'])->name('virustotal.index');
+    Route::get('/{id}', [VirusTotalController::class, 'show'])->name('virustotal.show');
+    Route::post('/scan', [VirusTotalController::class, 'scan'])->name('virustotal.scan');
+    Route::post('/{id}/rescan', [VirusTotalController::class, 'rescan'])->name('virustotal.rescan');
 });
 
 // Profile
