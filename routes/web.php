@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AlertController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +15,26 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
+// Alerts
+Route::prefix('alerts')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [AlertController::class, 'index'])->name('alerts.index');
+    Route::get('/{id}', [AlertController::class, 'show'])->name('alerts.show');
+    Route::post('/{id}/status', [AlertController::class, 'updateStatus'])->name('alerts.status');
+    Route::post('/{id}/escalate', [AlertController::class, 'escalate'])->name('alerts.escalate');
+});
+
+// Incidents
+Route::prefix('incidents')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [IncidentController::class, 'index'])->name('incidents.index');
+    Route::get('/create', [IncidentController::class, 'create'])->name('incidents.create');
+    Route::post('/', [IncidentController::class, 'store'])->name('incidents.store');
+    Route::get('/{id}', [IncidentController::class, 'show'])->name('incidents.show');
+    Route::get('/{id}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
+    Route::put('/{id}', [IncidentController::class, 'update'])->name('incidents.update');
+    Route::delete('/{id}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
+});
+
+// Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
