@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->unsignedTinyInteger('clearance_level')->default(1)->after('email_verified_at');
-            $table->string('timezone')->default('UTC')->after('rememberToken');
+            $table->string('timezone')->default('UTC')->after('remember_token');
             $table->text('two_factor_secret')->nullable()->after('timezone');
             $table->timestamp('two_factor_confirmed_at')->nullable()->after('two_factor_secret');
         });
