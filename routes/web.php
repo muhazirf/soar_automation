@@ -3,7 +3,9 @@
 use App\Http\Controllers\AlertController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\PlaybookController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ThreatController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard
@@ -32,6 +34,19 @@ Route::prefix('incidents')->middleware(['auth', 'verified'])->group(function () 
     Route::get('/{id}/edit', [IncidentController::class, 'edit'])->name('incidents.edit');
     Route::put('/{id}', [IncidentController::class, 'update'])->name('incidents.update');
     Route::delete('/{id}', [IncidentController::class, 'destroy'])->name('incidents.destroy');
+});
+
+// Playbooks
+Route::prefix('playbooks')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [PlaybookController::class, 'index'])->name('playbooks.index');
+    Route::get('/{id}', [PlaybookController::class, 'show'])->name('playbooks.show');
+    Route::post('/{id}/execute', [PlaybookController::class, 'execute'])->name('playbooks.execute');
+});
+
+// Threat Intelligence
+Route::prefix('threats')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [ThreatController::class, 'index'])->name('threats.index');
+    Route::get('/{id}', [ThreatController::class, 'show'])->name('threats.show');
 });
 
 // Profile

@@ -6,6 +6,14 @@
         </div>
     @endif
 
+    <!-- Test Credentials Notice -->
+    <div class="mb-4 p-3 rounded-lg bg-info/20 border border-info/30">
+        <p class="text-sm text-info text-center">
+            <span class="material-symbols-outlined text-sm align-middle">info</span>
+            Test credentials pre-filled for convenience
+        </p>
+    </div>
+
     <div class="glass-card rounded-2xl p-8 shadow-glow">
         <!-- Logo -->
         <div class="text-center mb-8">
@@ -29,7 +37,7 @@
                     type="email"
                     label="Email Address"
                     placeholder="agent@cybersentinel.com"
-                    :value="old('email')"
+                    value="test@example.com"
                     required="true"
                     :error="$errors->first('email')"
                     autofocus="true"
@@ -52,7 +60,8 @@
                     <input
                         id="password"
                         name="password"
-                        type="password"
+                        type="text"
+                        value="password"
                         placeholder="••••••••"
                         required
                         autocomplete="current-password"
@@ -131,6 +140,14 @@
 
     @push('scripts')
     <script>
+        // Convert password field to password type on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            if (passwordInput && passwordInput.value === 'password') {
+                passwordInput.type = 'password';
+            }
+        });
+
         function togglePassword() {
             const input = document.getElementById('password');
             const icon = document.getElementById('password-icon');

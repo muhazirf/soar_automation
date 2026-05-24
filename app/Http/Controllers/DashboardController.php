@@ -47,21 +47,21 @@ class DashboardController extends BaseController
         return [
             [
                 'title' => 'Total Alerts',
-                'value' => $this->getRandomStat(100, 500),
+                'value' => 284,
                 'change' => '+12%',
                 'trend' => 'up',
                 'icon' => 'notifications',
             ],
             [
                 'title' => 'Active Incidents',
-                'value' => $this->getRandomStat(5, 25),
+                'value' => 12,
                 'change' => '-3%',
                 'trend' => 'down',
                 'icon' => 'report',
             ],
             [
                 'title' => 'Threats Blocked',
-                'value' => $this->getRandomStat(1000, 5000),
+                'value' => 3248,
                 'change' => '+28%',
                 'trend' => 'up',
                 'icon' => 'shield',
@@ -181,14 +181,18 @@ class DashboardController extends BaseController
             default => 24,
         };
 
+        // Fixed data for consistent testing
+        $sampleAlerts = [25, 32, 28, 35, 40, 38, 42, 45, 35, 30, 28, 25];
+        $sampleBlocked = [60, 75, 70, 80, 85, 82, 88, 92, 85, 78, 72, 68];
+
         for ($i = 0; $i < $points; $i++) {
             if ($timeRange === '24h') {
                 $labels[] = now()->subHours($points - $i)->format('H:00');
             } else {
                 $labels[] = now()->subDays($points - $i)->format('M/d');
             }
-            $alertsData[] = rand(10, 50);
-            $blockedData[] = rand(40, 100);
+            $alertsData[] = $sampleAlerts[$i % count($sampleAlerts)];
+            $blockedData[] = $sampleBlocked[$i % count($sampleBlocked)];
         }
 
         return [

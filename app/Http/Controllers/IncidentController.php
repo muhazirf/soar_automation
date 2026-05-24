@@ -229,11 +229,11 @@ class IncidentController extends BaseController
     protected function getIncidentStats(): array
     {
         return [
-            'open' => rand(5, 15),
-            'investigating' => rand(10, 25),
-            'resolved' => rand(30, 80),
-            'critical' => rand(2, 8),
-            'high' => rand(8, 20),
+            'open' => 8,
+            'investigating' => 15,
+            'resolved' => 45,
+            'critical' => 4,
+            'high' => 12,
         ];
     }
 

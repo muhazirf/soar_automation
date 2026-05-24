@@ -211,13 +211,13 @@ class AlertController extends BaseController
     protected function getAlertStats(): array
     {
         return [
-            'total' => rand(100, 500),
-            'critical' => rand(5, 20),
-            'high' => rand(20, 50),
-            'medium' => rand(40, 80),
-            'low' => rand(50, 100),
-            'active' => rand(20, 60),
-            'resolved' => rand(50, 150),
+            'total' => 250,
+            'critical' => 12,
+            'high' => 35,
+            'medium' => 65,
+            'low' => 138,
+            'active' => 45,
+            'resolved' => 120,
         ];
     }
 
