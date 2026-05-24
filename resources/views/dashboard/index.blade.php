@@ -1,19 +1,39 @@
 <x-layouts.dashboard title="Dashboard">
+    @php
+        // Pass initial data to JavaScript
+        $initialTimeRange = $timeRange ?? '24h';
+    @endphp
+
     <!-- Time Range Selector -->
     <div class="flex items-center justify-between mb-6">
-        <div class="flex items-center gap-2">
-            <button class="px-4 py-2 text-sm rounded-lg {{ $timeRange === '24h' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} transition-colors" onclick="changeTimeRange('24h')">
+        <div class="flex items-center gap-2" x-data="{ timeRange: '{{ $initialTimeRange }}' }">
+            <button
+                @click="timeRange = '24h'; refreshCharts('24h')"
+                :class="timeRange === '24h' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'"
+                class="px-4 py-2 text-sm rounded-lg transition-colors"
+            >
                 24H
             </button>
-            <button class="px-4 py-2 text-sm rounded-lg {{ $timeRange === '7d' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} transition-colors" onclick="changeTimeRange('7d')">
+            <button
+                @click="timeRange = '7d'; refreshCharts('7d')"
+                :class="timeRange === '7d' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'"
+                class="px-4 py-2 text-sm rounded-lg transition-colors"
+            >
                 7D
             </button>
-            <button class="px-4 py-2 text-sm rounded-lg {{ $timeRange === '30d' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high' }} transition-colors" onclick="changeTimeRange('30d')">
+            <button
+                @click="timeRange = '30d'; refreshCharts('30d')"
+                :class="timeRange === '30d' ? 'bg-primary text-on-primary' : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'"
+                class="px-4 py-2 text-sm rounded-lg transition-colors"
+            >
                 30D
             </button>
         </div>
 
-        <button class="flex items-center gap-2 px-4 py-2 text-sm bg-surface-container border border-outline-variant/20 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors">
+        <button
+            onclick="refreshAllCharts()"
+            class="flex items-center gap-2 px-4 py-2 text-sm bg-surface-container border border-outline-variant/20 rounded-lg text-on-surface hover:bg-surface-container-high transition-colors"
+        >
             <span class="material-symbols-outlined text-lg">refresh</span>
             Refresh
         </button>
@@ -41,8 +61,27 @@
                 title="Alert Trends"
                 subtitle="Security alerts over time"
             >
-                <canvas id="alertsChart" height="300"></canvas>
+                <div class="h-[300px]">
+                    <canvas id="alertsChart"></canvas>
+                </div>
             </x-dashboard.chart-card>
+
+            <!-- System Metrics Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- CPU Usage Chart -->
+                <x-ui.card title="CPU Usage" subtitle="Real-time CPU utilization">
+                    <div class="h-[200px]">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </x-ui.card>
+
+                <!-- Memory Usage Chart -->
+                <x-ui.card title="Memory Usage" subtitle="Real-time memory utilization">
+                    <div class="h-[200px]">
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+                </x-ui.card>
+            </div>
 
             <!-- Recent Alerts -->
             <x-ui.card title="Recent Alerts" subtitle="Latest security alerts">
@@ -70,18 +109,18 @@
                         <span class="material-symbols-outlined text-2xl text-primary group-hover:scale-110 transition-transform">add_alert</span>
                         <span class="text-xs text-on-surface-variant">New Alert</span>
                     </button>
-                    <button class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+                    <a href="{{ route('incidents.create') }}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
                         <span class="material-symbols-outlined text-2xl text-warning group-hover:scale-110 transition-transform">report</span>
                         <span class="text-xs text-on-surface-variant">Report</span>
-                    </button>
-                    <button class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+                    </a>
+                    <a href="{{ route('virustotal.index') }}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
                         <span class="material-symbols-outlined text-2xl text-info group-hover:scale-110 transition-transform">scan</span>
                         <span class="text-xs text-on-surface-variant">Scan</span>
-                    </button>
-                    <button class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
+                    </a>
+                    <a href="{{ route('playbooks.index') }}" class="flex flex-col items-center gap-2 p-4 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors group">
                         <span class="material-symbols-outlined text-2xl text-success group-hover:scale-110 transition-transform">playbook</span>
                         <span class="text-xs text-on-surface-variant">Playbook</span>
-                    </button>
+                    </a>
                 </div>
             </x-ui.card>
 
@@ -95,18 +134,18 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-on-surface-variant">CPU Usage</span>
-                        <span class="text-sm font-mono text-on-surface">42%</span>
+                        <span class="text-sm font-mono text-on-surface" id="cpuValue">--%</span>
                     </div>
                     <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                        <div class="h-full bg-success rounded-full" style="width: 42%"></div>
+                        <div id="cpuBar" class="h-full bg-success rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
 
                     <div class="flex items-center justify-between">
                         <span class="text-sm text-on-surface-variant">Memory</span>
-                        <span class="text-sm font-mono text-on-surface">68%</span>
+                        <span class="text-sm font-mono text-on-surface" id="memoryValue">--%</span>
                     </div>
                     <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                        <div class="h-full bg-warning rounded-full" style="width: 68%"></div>
+                        <div id="memoryBar" class="h-full bg-warning rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
 
                     <div class="flex items-center justify-between">
@@ -124,104 +163,171 @@
 
 @push('scripts')
 <script>
-    // Time range change
-    function changeTimeRange(range) {
-        const url = new URL(window.location);
-        url.searchParams.set('time_range', range);
-        window.location = url.toString();
+    // Global variables for chart instances
+    let alertsChart = null;
+    let cpuChart = null;
+    let memoryChart = null;
+    let autoRefreshInterval = null;
+
+    /**
+     * Initialize all charts when DOM is ready
+     */
+    document.addEventListener('DOMContentLoaded', async function() {
+        await initializeCharts();
+        setupAutoRefresh();
+    });
+
+    /**
+     * Initialize all charts
+     */
+    async function initializeCharts() {
+        const timeRange = '{{ $initialTimeRange }}';
+
+        try {
+            // Create Alert Trends Chart
+            alertsChart = await chartManager.createLineChartFromApi(
+                'alertsChart',
+                '/api/charts/alerts/trends',
+                { time_range: timeRange }
+            );
+
+            // Create CPU Chart (real-time data)
+            await updateSystemMetrics();
+
+            // Create Memory Chart (real-time data)
+            await updateSystemMetrics();
+
+        } catch (error) {
+            console.error('Failed to initialize charts:', error);
+        }
     }
 
-    // Chart data
-    const chartData = @json($chartData);
+    /**
+     * Update system metrics charts
+     */
+    async function updateSystemMetrics() {
+        try {
+            const response = await fetch('/api/charts/system/metrics');
+            const result = await response.json();
 
-    // Simple canvas chart (without external library)
-    document.addEventListener('DOMContentLoaded', function() {
-        const canvas = document.getElementById('alertsChart');
-        if (!canvas) return;
+            if (result.success && result.data) {
+                const { cpu, memory } = result.data;
 
-        const ctx = canvas.getContext('2d');
-        const width = canvas.offsetWidth;
-        const height = 300;
+                // Update CPU value and bar
+                document.getElementById('cpuValue').textContent = cpu.current + '%';
+                document.getElementById('cpuBar').style.width = cpu.current + '%';
+                document.getElementById('cpuBar').className = `h-full rounded-full transition-all duration-500 ${cpu.current > 80 ? 'bg-error' : cpu.current > 60 ? 'bg-warning' : 'bg-success'}`;
 
-        canvas.width = width;
-        canvas.height = height;
+                // Update Memory value and bar
+                document.getElementById('memoryValue').textContent = memory.current + '%';
+                document.getElementById('memoryBar').style.width = memory.current + '%';
+                document.getElementById('memoryBar').className = `h-full rounded-full transition-all duration-500 ${memory.current > 85 ? 'bg-error' : memory.current > 70 ? 'bg-warning' : 'bg-success'}`;
 
-        // Clear canvas
-        ctx.clearRect(0, 0, width, height);
+                // Create CPU history chart
+                if (!cpuChart || !chartManager.hasChart('cpuChart')) {
+                    cpuChart = chartManager.createChart('cpuChart', 'line', {
+                        labels: Array(20).fill('').map((_, i) => i),
+                        datasets: [{
+                            label: 'CPU %',
+                            data: cpu.history,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                        }]
+                    }, {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: {
+                                min: 0,
+                                max: 100,
+                                grid: { color: 'rgba(143, 144, 151, 0.1)' },
+                                ticks: { color: '#c5c6cd', font: { size: 10 } }
+                            }
+                        }
+                    });
+                }
 
-        const datasets = chartData.datasets;
-        const labels = chartData.labels;
-        const padding = 40;
-        const chartWidth = width - padding * 2;
-        const chartHeight = height - padding * 2;
+                // Create Memory history chart
+                if (!memoryChart || !chartManager.hasChart('memoryChart')) {
+                    memoryChart = chartManager.createChart('memoryChart', 'line', {
+                        labels: Array(20).fill('').map((_, i) => i),
+                        datasets: [{
+                            label: 'Memory %',
+                            data: memory.history,
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 0,
+                        }]
+                    }, {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { display: false },
+                            y: {
+                                min: 0,
+                                max: 100,
+                                grid: { color: 'rgba(143, 144, 151, 0.1)' },
+                                ticks: { color: '#c5c6cd', font: { size: 10 } }
+                            }
+                        }
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to update system metrics:', error);
+        }
+    }
 
-        // Find max value for scaling
-        const maxValue = Math.max(
-            ...datasets.flatMap(d => d.data)
-        );
+    /**
+     * Refresh charts for specific time range
+     */
+    async function refreshCharts(timeRange) {
+        try {
+            await chartManager.updateChartFromApi(
+                'alertsChart',
+                '/api/charts/alerts/trends',
+                { time_range: timeRange }
+            );
+        } catch (error) {
+            console.error('Failed to refresh charts:', error);
+        }
+    }
 
-        // Draw grid lines
-        ctx.strokeStyle = 'rgba(143, 144, 151, 0.1)';
-        ctx.lineWidth = 1;
-        for (let i = 0; i <= 4; i++) {
-            const y = padding + (chartHeight / 4) * i;
-            ctx.beginPath();
-            ctx.moveTo(padding, y);
-            ctx.lineTo(width - padding, y);
-            ctx.stroke();
+    /**
+     * Refresh all charts
+     */
+    async function refreshAllCharts() {
+        const activeTimeRange = document.querySelector('[x-data]*[x-data]')?.timeRange || '24h';
+        await refreshCharts(activeTimeRange);
+        await updateSystemMetrics();
+    }
+
+    /**
+     * Setup auto-refresh interval
+     */
+    function setupAutoRefresh() {
+        // Refresh system metrics every 10 seconds
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
         }
 
-        // Draw datasets
-        datasets.forEach((dataset, datasetIndex) => {
-            const color = dataset.color;
-            const data = dataset.data;
-            const stepX = chartWidth / (data.length - 1);
+        autoRefreshInterval = setInterval(() => {
+            updateSystemMetrics();
+        }, 10000);
+    }
 
-            // Draw fill area
-            ctx.beginPath();
-            ctx.moveTo(padding, height - padding);
-            data.forEach((value, i) => {
-                const x = padding + stepX * i;
-                const y = height - padding - (value / maxValue) * chartHeight;
-                ctx.lineTo(x, y);
-            });
-            ctx.lineTo(width - padding, height - padding);
-            ctx.closePath();
-            ctx.fillStyle = color + '20';
-            ctx.fill();
-
-            // Draw line
-            ctx.beginPath();
-            data.forEach((value, i) => {
-                const x = padding + stepX * i;
-                const y = height - padding - (value / maxValue) * chartHeight;
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Draw points
-            data.forEach((value, i) => {
-                const x = padding + stepX * i;
-                const y = height - padding - (value / maxValue) * chartHeight;
-                ctx.beginPath();
-                ctx.arc(x, y, 4, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
-            });
-        });
-
-        // Draw labels
-        ctx.fillStyle = '#c5c6cd';
-        ctx.font = '11px JetBrains Mono';
-        ctx.textAlign = 'center';
-        labels.forEach((label, i) => {
-            const stepX = chartWidth / (labels.length - 1);
-            const x = padding + stepX * i;
-            ctx.fillText(label, x, height - 10);
-        });
+    /**
+     * Cleanup on page unload
+     */
+    window.addEventListener('beforeunload', () => {
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+        }
+        chartManager.destroyAllCharts();
     });
 </script>
 @endpush
