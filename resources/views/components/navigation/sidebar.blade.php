@@ -26,7 +26,7 @@
             </div>
             <div>
                 <h1 class="text-headline-md text-primary leading-tight">Command Center</h1>
-                <p class="text-label-sm text-on-surface-variant">Level {{ $user?->clearance_level ?? 4 }} Clearance</p>
+                <p class="text-label-sm text-on-surface-variant">Level {{ auth()->user()->clearance_level ?? 4 }} Clearance</p>
             </div>
         </div>
     </div>
@@ -67,9 +67,12 @@
                     <p class="text-sm font-medium text-on-surface truncate">{{ auth()->user()->name }}</p>
                     <p class="text-xs text-on-surface-variant truncate">{{ auth()->user()->email }}</p>
                 </div>
-                <a href="{{ route('logout') }}" method="post" class="text-on-surface-variant hover:text-error">
-                    <span class="material-symbols-outlined text-lg">logout</span>
-                </a>
+                <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @csrf
+                    <button type="submit" class="text-on-surface-variant hover:text-error cursor-pointer bg-transparent border-none p-0">
+                        <span class="material-symbols-outlined text-lg">logout</span>
+                    </button>
+                </form>
             </div>
         </div>
     @endauth

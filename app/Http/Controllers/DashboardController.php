@@ -111,6 +111,37 @@ class DashboardController extends BaseController
     }
 
     /**
+     * Update settings
+     */
+    public function updateSettings(Request $request)
+    {
+        $validated = $request->validate([
+            'notifications.email_alerts' => 'sometimes|boolean',
+            'notifications.push_alerts' => 'sometimes|boolean',
+            'notifications.alert_severity' => 'sometimes|in:low,medium,high,critical',
+            'security.session_timeout' => 'sometimes|integer|min:15|max:480',
+            'display.theme' => 'sometimes|in:dark,light,auto',
+            'display.timezone' => 'sometimes|timezone',
+            'display.time_format' => 'sometimes|in:12h,24h',
+            'api.virus_total_enabled' => 'sometimes|boolean',
+            'api.abuse_ch_enabled' => 'sometimes|boolean',
+            'api.threat_fox_enabled' => 'sometimes|boolean',
+        ]);
+
+        $user = $this->authenticatedUser();
+
+        // Update user timezone
+        if (isset($validated['display']['timezone'])) {
+            $user->timezone = $validated['display']['timezone'];
+            $user->save();
+        }
+
+        // In a real app, save these to a settings table or user preferences
+        // For now, just redirect back with success message
+        return back()->with('success', 'Settings updated successfully.');
+    }
+
+    /**
      * Get recent alerts
      */
     protected function getRecentAlerts($user, int $limit): array

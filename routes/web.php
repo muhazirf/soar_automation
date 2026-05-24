@@ -79,5 +79,6 @@ Route::prefix('users')->middleware(['auth', 'verified'])->group(function () {
 
 // Settings
 Route::get('/settings', [DashboardController::class, 'settings'])->name('settings')->middleware(['auth', 'verified']);
+Route::put('/settings', [DashboardController::class, 'updateSettings'])->name('settings.update')->middleware(['auth', 'verified']);
 
 require __DIR__.'/auth.php';
